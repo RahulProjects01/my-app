@@ -1,17 +1,37 @@
-import React, { useState } from 'react';
-import './connect.css'; // Ensure this path matches where your CSS file is located
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import './connect.css';
 
-const ContactForm = () => {
-    // State to handle form inputs
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        meetingPerson: '',
-        message: ''
-    });
+const ConnectForm = () => {
+    const [user, setUser] = useState({});
+    const [formData, setFormData] = useState({});
+    const [admins, setAdmins] = useState([]);
+    let da = localStorage.getItem("user");
+    da = JSON.parse(da);
+    useEffect(() => {
 
-    // Function to handle input changes
+        if (da != null) {
+            setUser(da);
+            setFormData({
+                firstName: da.firstName,
+                lastName: da.lastName,
+                email: da.emailAddress,
+                meetingPerson: null,
+                message: ''
+            })
+        }
+        const fetchData = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/users/allAdmin');
+                console.log(response.data);
+                setAdmins(response.data);
+            } catch (err) {
+                console.log('Registration failed');
+            }
+        }
+        fetchData();
+        console.log(da);
+    }, [])
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -20,10 +40,30 @@ const ContactForm = () => {
         });
     };
 
-    // Function to handle form submission
-    const handleSubmit = (e) => {
-        e.preventDefault(); // Prevent default form submission behavior
-        console.log(formData); // Print form data to the console
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (formData.meetingPerson == null || formData.meetingPerson == '' || formData.message == '') {
+            alert("please fill fields..");
+            return;
+        }
+        const data = {
+            "mailFrom": user.id,
+            "mailTo": formData.meetingPerson,
+            "mailDescriptions": formData.message
+        }
+        try {
+
+            const response = await axios.post('http://localhost:8080/sender/EmailProcessing', data);
+            console.log(response.data);
+            setFormData(pre => ({
+                ...pre,
+                meetingPerson: null,
+                message: ''
+            }));
+            alert("successfully send")
+        } catch (err) {
+            console.log('Registration failed');
+        }
 
     };
 
@@ -36,7 +76,7 @@ const ContactForm = () => {
                         <input
                             type="text"
                             name="firstName"
-                            value={formData.firstName}
+                            value={formData?.firstName}
                             onChange={handleChange}
                             required
                         />
@@ -74,12 +114,15 @@ const ContactForm = () => {
                             onChange={handleChange}
                             required
                         >
-                            <option value="" disabled>Select Person</option>
-                            <option value="john">John Doe</option>
-                            <option value="jane">Jane Smith</option>
-                            <option value="mike">Mike Johnson</option>
-                            <option value="emily">Emily Brown</option>
-                            <option value="david">David Wilson</option>
+                            <option value='' >Select Person</option>
+                            {
+                                admins.map((item, index) => (
+                                    <option value={item.id} key={index}>
+                                        {item.firstName} {/* Replace "John Doe" with dynamic data, e.g., item.name */}
+                                    </option>
+                                ))
+                            }
+
                         </select>
                         <div className="underline"></div>
                         <label>Meeting Person</label>
@@ -105,7 +148,7 @@ const ContactForm = () => {
                 </div>
             </form>
         </div>
-    );
+    )
 };
 
-export default ContactForm;
+export default ConnectForm;

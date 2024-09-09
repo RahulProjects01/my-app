@@ -1,22 +1,26 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-import './login.css'; // Ensure this path matches where your CSS file is located
+import './login.css'; 
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const [emailAddress, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log({ email, password }); // Print form data to console
+        const data = {
+            "emailAddress": emailAddress,
+            "password": password
+        }
+       
         try {
-            const response = await axios.post('http://your-api-url/login', {
-                email,
-                password
-            });
-            // Handle successful login (e.g., store token, redirect)
+            const response = await axios.post('http://localhost:8080/api/users/login', data);
             console.log(response.data);
+            localStorage.setItem('user', JSON.stringify(response.data));
+            setEmail('');
+            setPassword('');
+            alert("login successfully..");
         } catch (err) {
             setError('Invalid credentials');
         }
@@ -29,8 +33,8 @@ const Login = () => {
                 <div className="input-data">
                     <input
                         type="email"
-                        name="email"
-                        value={email}
+                        name="emailAddress"
+                        value={emailAddress}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />

@@ -1,20 +1,25 @@
 import axios from 'axios';
-import React, { useState } from 'react';
-import './Register.css'; // Ensure this path matches where your CSS file is located
+import React, { useEffect, useState } from 'react';
+import './Register.css'; 
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    username: '',
-    phoneNumber: '',
-    userType: '',
-  });
+  const [formData, setFormData] = useState({});
 
   const [error, setError] = useState('');
 
+  useEffect(()=>{
+    setFormData({
+      "firstName": "",
+      "lastName": "",
+      "phoneNumber": "",
+      "username": "",
+      "emailAddress": "",
+      "password": "",
+      "userType": null
+    });
+  },[])
+
+  console.log(formData);
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -24,11 +29,24 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData); // Print form data to console
+    console.log(formData); 
     try {
-      const response = await axios.post('http://your-api-url/register', formData);
-      // Handle successful registration (e.g., redirect to login)
+      const response = await axios.post('http://localhost:8080/api/users/register', formData  , {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      });
       console.log(response.data);
+      setFormData({
+        "firstName": "",
+        "lastName": "",
+        "phoneNumber": "",
+        "username": "",
+        "emailAddress": "",
+        "password": "",
+        "userType": null
+      });
+      alert("register successfully..");
     } catch (err) {
       setError('Registration failed');
     }
@@ -66,8 +84,8 @@ const Register = () => {
           <div className="input-data">
             <input
               type="email"
-              name="email"
-              value={formData.email}
+              name="emailAddress"
+              value={formData.emailAddress}
               onChange={handleChange}
               required
             />
@@ -100,7 +118,7 @@ const Register = () => {
           </div>
           <div className="input-data">
             <input
-              type="tel"
+              type="text"
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
@@ -119,14 +137,13 @@ const Register = () => {
               required
             >
               <option value="" disabled>Select Type</option>
-              <option value="admin">Admin</option>
-              <option value="user">User</option>
+              <option value="1">Admin</option>
+              <option value="2">User</option>
             </select>
             <div className="underline"></div>
             <label>Select Type</label>
           </div>
         </div>
-        {error && <p>{error}</p>}
         <div className="form-row submit-btn">
           <div className="input-data">
             <div className="inner"></div>
